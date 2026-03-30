@@ -1,5 +1,6 @@
 plugins {
     id("weather.android.feature")
+    id("weather.jacoco")
 }
 
 android {

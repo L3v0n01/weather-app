@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_placeholder">Search city…</string>
+    <string name="search_cd_back">Back</string>
+    <string name="search_cd_clear">Clear</string>
+    <string name="search_hint">Type a city name to search</string>
+    <string name="search_no_results">No cities found for \"%1$s\"</string>
+</resources>
