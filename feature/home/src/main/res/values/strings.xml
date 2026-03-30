@@ -17,4 +17,5 @@
     <string name="home_temp_separator" translatable="false"> / </string>
     <string name="home_error_permission">Location permission required.\nSearch for a city to get started.</string>
     <string name="home_error_location">Could not get location.</string>
+    <string name="home_offline_banner">Offline — showing cached data</string>
 </resources>

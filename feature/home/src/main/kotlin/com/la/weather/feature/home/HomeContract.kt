@@ -13,6 +13,7 @@ data class HomeUiState(
     val forecast: WeatherForecast? = null,
     val cityName: String = "",
     val temperatureUnit: TemperatureUnit = TemperatureUnit.DEFAULT,
+    val isOffline: Boolean = false,
     @StringRes val errorResId: Int? = null,
     val errorMessage: String? = null,
 ) : UiState

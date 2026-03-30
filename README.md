@@ -11,7 +11,8 @@ An Android weather app built with Jetpack Compose and Clean Architecture. Uses t
 - Device location support (GPS / network)
 - Celsius / Fahrenheit toggle
 - Light / Dark / System theme modes
-- Offline caching with Room
+- Offline caching with Room + automatic refetch when connectivity is restored
+- Real-time network state monitoring with offline banner indicator
 - SVG weather icons (44 Google weather icons with light/dark variants)
 
 ## Screenshots

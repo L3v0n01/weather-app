@@ -3,6 +3,7 @@ package com.la.weather.feature.home
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -100,29 +101,35 @@ fun HomeScreen(
             )
         }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
-            when {
-                uiState.isLoading -> LoadingContent()
-                uiState.forecast != null -> WeatherContent(
-                    forecast = uiState.forecast!!,
-                    temperatureUnit = uiState.temperatureUnit,
-                    onRefresh = { viewModel.handleEvent(HomeUiEvent.Refresh) },
-                )
+            if (uiState.isOffline) {
+                OfflineBanner()
+            }
+            Box(modifier = Modifier.weight(1f)) {
+                when {
+                    uiState.isLoading -> LoadingContent()
+                    uiState.forecast != null -> WeatherContent(
+                        forecast = uiState.forecast!!,
+                        temperatureUnit = uiState.temperatureUnit,
+                        onRefresh = { viewModel.handleEvent(HomeUiEvent.Refresh) },
+                    )
 
-                uiState.errorMessage != null -> ErrorContent(
-                    message = uiState.errorMessage!!,
-                    onRetry = { viewModel.handleEvent(HomeUiEvent.Refresh) },
-                    onSearchCity = onNavigateToSearch,
-                )
-                uiState.errorResId != null -> ErrorContent(
-                    message = stringResource(uiState.errorResId!!),
-                    onRetry = { viewModel.handleEvent(HomeUiEvent.Refresh) },
-                    onSearchCity = onNavigateToSearch,
-                )
+                    uiState.errorMessage != null -> ErrorContent(
+                        message = uiState.errorMessage!!,
+                        onRetry = { viewModel.handleEvent(HomeUiEvent.Refresh) },
+                        onSearchCity = onNavigateToSearch,
+                    )
+
+                    uiState.errorResId != null -> ErrorContent(
+                        message = stringResource(uiState.errorResId!!),
+                        onRetry = { viewModel.handleEvent(HomeUiEvent.Refresh) },
+                        onSearchCity = onNavigateToSearch,
+                    )
+                }
             }
         }
     }
@@ -152,10 +159,16 @@ private fun HomeTopBar(
                 maxLines = 1,
             )
             IconButton(onClick = onSearchClick) {
-                Icon(Icons.Default.Search, contentDescription = stringResource(R.string.home_cd_search))
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = stringResource(R.string.home_cd_search)
+                )
             }
             IconButton(onClick = onSettingsClick) {
-                Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.home_cd_settings))
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = stringResource(R.string.home_cd_settings)
+                )
             }
         }
     }
@@ -165,6 +178,24 @@ private fun HomeTopBar(
 private fun LoadingContent() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun OfflineBanner() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.tertiaryContainer)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.home_offline_banner),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onTertiaryContainer,
+        )
     }
 }
 
@@ -481,8 +512,26 @@ private fun HomeScreenPreview() {
             HourlyForecast("2025-03-27T16:00", 17.0, WeatherCondition.OVERCAST, 20, 14.0),
         ),
         daily = persistentListOf(
-            DailyForecast("2025-03-27", 20.0, 12.0, WeatherCondition.PARTLY_CLOUDY, "06:30", "18:45", 0.0, 10),
-            DailyForecast("2025-03-28", 22.0, 14.0, WeatherCondition.CLEAR_SKY, "06:28", "18:46", 0.0, 0),
+            DailyForecast(
+                "2025-03-27",
+                20.0,
+                12.0,
+                WeatherCondition.PARTLY_CLOUDY,
+                "06:30",
+                "18:45",
+                0.0,
+                10
+            ),
+            DailyForecast(
+                "2025-03-28",
+                22.0,
+                14.0,
+                WeatherCondition.CLEAR_SKY,
+                "06:28",
+                "18:46",
+                0.0,
+                0
+            ),
         ),
     )
     WeatherTheme {

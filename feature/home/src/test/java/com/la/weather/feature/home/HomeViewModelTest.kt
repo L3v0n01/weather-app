@@ -1,6 +1,7 @@
 package com.la.weather.feature.home
 
 import app.cash.turbine.test
+import com.la.weather.core.common.connectivity.ConnectivityObserver
 import com.la.weather.core.datastore.WeatherPreferences
 import com.la.weather.core.domain.usecase.GetWeatherUseCase
 import com.la.weather.core.location.DeviceLocation
@@ -21,6 +22,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -43,6 +45,10 @@ class HomeViewModelTest {
     private val getWeatherUseCase: GetWeatherUseCase = mockk()
     private val locationProvider: LocationProvider = mockk()
     private val weatherPreferences: WeatherPreferences = mockk()
+    private val connectivityFlow = MutableStateFlow(true)
+    private val connectivityObserver: ConnectivityObserver = mockk {
+        every { isOnline } returns connectivityFlow
+    }
 
     private val fakeWeatherForecast = WeatherForecast(
         latitude = 40.7128, longitude = -74.006, timezone = "UTC",
@@ -57,7 +63,7 @@ class HomeViewModelTest {
     }
 
     private fun createViewModel() =
-        HomeViewModel(getWeatherUseCase, locationProvider, weatherPreferences)
+        HomeViewModel(getWeatherUseCase, locationProvider, weatherPreferences, connectivityObserver)
 
     // ─── initial load ────────────────────────────────────────────────────────
 
@@ -115,6 +121,7 @@ class HomeViewModelTest {
             coEvery { locationProvider.getCurrentLocation() } returns
                 Result.success(DeviceLocation(48.8566, 2.3522))
             coEvery { getWeatherUseCase(48.8566, 2.3522) } returns Resource.Success(fakeWeatherForecast)
+            coEvery { weatherPreferences.setLastLocation(any(), any(), any()) } just Runs
 
             val vm = createViewModel()
 

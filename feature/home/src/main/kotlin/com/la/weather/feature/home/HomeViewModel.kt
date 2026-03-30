@@ -1,6 +1,7 @@
 package com.la.weather.feature.home
 
 import androidx.lifecycle.viewModelScope
+import com.la.weather.core.common.connectivity.ConnectivityObserver
 import com.la.weather.core.common.mvi.BaseViewModel
 import com.la.weather.core.datastore.WeatherPreferences
 import com.la.weather.core.domain.usecase.GetWeatherUseCase
@@ -19,6 +20,7 @@ class HomeViewModel @Inject constructor(
     private val getWeatherUseCase: GetWeatherUseCase,
     private val locationProvider: LocationProvider,
     private val weatherPreferences: WeatherPreferences,
+    private val connectivityObserver: ConnectivityObserver,
 ) : BaseViewModel<HomeUiState, HomeUiEvent, HomeUiEffect>() {
 
     override fun initialState() = HomeUiState()
@@ -29,6 +31,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         observeTemperatureUnit()
+        observeConnectivity()
         loadInitialWeather()
     }
 
@@ -36,6 +39,18 @@ class HomeViewModel @Inject constructor(
         when (event) {
             HomeUiEvent.Refresh -> loadInitialWeather()
             is HomeUiEvent.CitySelected -> loadWeatherForCity(event.city)
+        }
+    }
+
+    private fun observeConnectivity() {
+        viewModelScope.launch {
+            connectivityObserver.isOnline.collect { online ->
+                if (online && uiState.value.isOffline) {
+                    loadInitialWeather()
+                } else if (!online && uiState.value.forecast != null) {
+                    updateState { copy(isOffline = true) }
+                }
+            }
         }
     }
 
@@ -85,10 +100,18 @@ class HomeViewModel @Inject constructor(
         execute(
             block = { getWeatherUseCase(lat, lon) },
             onSuccess = { forecast ->
-                updateState { copy(isLoading = false, forecast = forecast, cityName = cityName) }
+                val isCurrentlyOffline = !connectivityObserver.isOnline.first()
+                updateState {
+                    copy(
+                        isLoading = false,
+                        forecast = forecast,
+                        cityName = cityName,
+                        isOffline = isCurrentlyOffline
+                    )
+                }
             },
-            onError = { message, _ ->
-                updateState { copy(isLoading = false, errorMessage = message) }
+            onError = { msg, _ ->
+                updateState { copy(isLoading = false, errorMessage = msg) }
             },
         )
     }
@@ -97,14 +120,29 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             weatherPreferences.setLastLocation(city.latitude, city.longitude, city.name)
         }
-        updateState { copy(isLoading = true, errorResId = null, errorMessage = null, cityName = city.name) }
+        updateState {
+            copy(
+                isLoading = true,
+                errorResId = null,
+                errorMessage = null,
+                cityName = city.name
+            )
+        }
         execute(
             block = { getWeatherUseCase(city.latitude, city.longitude) },
             onSuccess = { forecast ->
-                updateState { copy(isLoading = false, forecast = forecast, cityName = city.name) }
+                val isCurrentlyOffline = !connectivityObserver.isOnline.first()
+                updateState {
+                    copy(
+                        isLoading = false,
+                        forecast = forecast,
+                        cityName = city.name,
+                        isOffline = isCurrentlyOffline
+                    )
+                }
             },
-            onError = { message, _ ->
-                updateState { copy(isLoading = false, errorMessage = message) }
+            onError = { msg, _ ->
+                updateState { copy(isLoading = false, errorMessage = msg) }
             },
         )
     }
