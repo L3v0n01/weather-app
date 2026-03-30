@@ -1,5 +1,6 @@
 plugins {
     id("weather.android.feature")
+    id("weather.jacoco")
 }
 
 android {
@@ -8,5 +9,6 @@ android {
 
 dependencies {
     implementation(project(":core:location"))
+    implementation(project(":core:datastore"))
     testImplementation(project(":core:testing"))
 }
