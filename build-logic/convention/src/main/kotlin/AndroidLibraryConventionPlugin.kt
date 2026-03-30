@@ -8,17 +8,21 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply("com.android.library")
+            pluginManager.apply("weather.jacoco")
 
             extensions.configure<LibraryExtension> {
                 compileSdk = 36
                 defaultConfig {
-                    minSdk = 23
+                    minSdk = 24
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                     consumerProguardFiles("consumer-rules.pro")
                 }
                 compileOptions {
                     sourceCompatibility = JavaVersion.VERSION_17
                     targetCompatibility = JavaVersion.VERSION_17
+                }
+                testOptions {
+                    unitTests.all { it.useJUnitPlatform() }
                 }
             }
         }

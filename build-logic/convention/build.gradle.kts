@@ -31,5 +31,9 @@ gradlePlugin {
             id = "weather.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"
         }
+        register("weatherJacoco") {
+            id = "weather.jacoco"
+            implementationClass = "JacocoConventionPlugin"
+        }
     }
 }

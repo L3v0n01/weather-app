@@ -17,6 +17,15 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
                 buildFeatures { compose = true }
             }
 
+            pluginManager.withPlugin("org.jetbrains.kotlin.plugin.compose") {
+                val ext = extensions.getByName("composeCompiler")
+                @Suppress("UNCHECKED_CAST")
+                val files = ext.javaClass.getMethod(
+                    "getStabilityConfigurationFiles",
+                ).invoke(ext) as org.gradle.api.provider.ListProperty<org.gradle.api.file.RegularFile>
+                files.add(target.rootProject.layout.projectDirectory.file("compose_stability.conf"))
+            }
+
             dependencies {
                 add("implementation", project(":core:common"))
                 add("implementation", project(":core:model"))

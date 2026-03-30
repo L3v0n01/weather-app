@@ -3,14 +3,11 @@
 /local.properties
 /.idea/
 .DS_Store
-/build
+**/build/
 /captures
 .externalNativeBuild
 .cxx
 local.properties
-
-# Build-logic build output
-build-logic/**/build/
 
 # Claude Code
 .claude/
