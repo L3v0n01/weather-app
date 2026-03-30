@@ -1,9 +1,15 @@
 plugins {
     id("weather.jvm.library")
-    alias(libs.plugins.kotlin.serialization)
+    id("weather.jacoco")
+
 }
 
 dependencies {
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.collections.immutable)
+    api(libs.kotlinx.collections.immutable)
+
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(libs.kotest.property)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
