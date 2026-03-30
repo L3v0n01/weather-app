@@ -6,10 +6,12 @@ plugins {
 
 android {
     namespace = "com.la.weather.core.network"
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
-    implementation(project(":core:model"))
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx.serialization)
     implementation(libs.okhttp)
