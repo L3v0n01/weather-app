@@ -3,6 +3,7 @@ package com.la.weather.core.location
 data class DeviceLocation(
     val latitude: Double,
     val longitude: Double,
+    val cityName: String = "",
 )
 
 sealed interface LocationError {

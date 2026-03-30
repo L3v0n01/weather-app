@@ -3,14 +3,17 @@ package com.la.weather.core.location
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
+import android.os.Build
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.Locale
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -32,7 +35,8 @@ class LocationProviderImpl @Inject constructor(
         return try {
             val location = awaitCurrentLocation()
             if (location != null) {
-                Result.success(DeviceLocation(location.latitude, location.longitude))
+                val cityName = reverseGeocode(location.latitude, location.longitude)
+                Result.success(DeviceLocation(location.latitude, location.longitude, cityName))
             } else {
                 Result.failure(LocationException(LocationError.Unavailable))
             }
@@ -48,7 +52,7 @@ class LocationProviderImpl @Inject constructor(
         suspendCancellableCoroutine { cont ->
             val cts = CancellationTokenSource()
             fusedLocationClient.getCurrentLocation(
-                Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                Priority.PRIORITY_HIGH_ACCURACY,
                 cts.token,
             ).addOnSuccessListener { location ->
                 cont.resume(location)
@@ -56,6 +60,31 @@ class LocationProviderImpl @Inject constructor(
                 cont.resumeWithException(e)
             }
             cont.invokeOnCancellation { cts.cancel() }
+        }
+
+    private suspend fun reverseGeocode(latitude: Double, longitude: Double): String =
+        try {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                suspendCancellableCoroutine { cont ->
+                    geocoder.getFromLocation(latitude, longitude, 1) { addresses ->
+                        val name = addresses.firstOrNull()?.locality
+                            ?: addresses.firstOrNull()?.subAdminArea
+                            ?: addresses.firstOrNull()?.adminArea
+                            ?: ""
+                        cont.resume(name)
+                    }
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+                addresses?.firstOrNull()?.locality
+                    ?: addresses?.firstOrNull()?.subAdminArea
+                    ?: addresses?.firstOrNull()?.adminArea
+                    ?: ""
+            }
+        } catch (_: Exception) {
+            ""
         }
 
     private fun hasLocationPermission(): Boolean =

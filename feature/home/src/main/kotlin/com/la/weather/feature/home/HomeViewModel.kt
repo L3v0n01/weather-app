@@ -24,7 +24,7 @@ class HomeViewModel @Inject constructor(
     override fun initialState() = HomeUiState()
 
     companion object {
-        private const val LOCATION_TIMEOUT_MS = 5_000L
+        private const val LOCATION_TIMEOUT_MS = 10_000L
     }
 
     init {
@@ -68,7 +68,8 @@ class HomeViewModel @Inject constructor(
 
         if (locationResult.isSuccess) {
             val loc = locationResult.getOrThrow()
-            fetchWeather(loc.latitude, loc.longitude, "")
+            weatherPreferences.setLastLocation(loc.latitude, loc.longitude, loc.cityName)
+            fetchWeather(loc.latitude, loc.longitude, loc.cityName)
         } else {
             val throwable = locationResult.exceptionOrNull()
             if ((throwable as? LocationException)?.error == LocationError.PermissionDenied) {
