@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:model"))
+    api(project(":core:model"))
+    api(libs.kotlinx.coroutines.core)
     implementation(libs.datastore.preferences)
 }
